@@ -1,0 +1,1686 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MPI • Fungsi Kuadrat</title>
+    <!-- ============ KATEX ============ -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+      integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"
+      crossorigin="anonymous"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+      integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+      integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      /* ============ AURORA PASTEL ============ */
+      #aurora-container {
+        position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        background:
+          radial-gradient(1200px 700px at 10% -10%, #fef3c7 0%, transparent 60%),
+          radial-gradient(1000px 700px at 100% 0%, #e0f2fe 0%, transparent 55%),
+          radial-gradient(900px 700px at 50% 120%, #fce7f3 0%, transparent 60%),
+          #ffffff;
+      }
+      .aurora {
+        position: absolute; opacity: 0; filter: blur(80px);
+        will-change: transform, opacity; transition: opacity 8s ease-in-out;
+        border-radius: 50%; width: 100%; height: 100%;
+      }
+
+      /* ============ BASE ============ */
+      * {
+        margin: 0; padding: 0; box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      }
+      body {
+        background: #ffffff; min-height: 100vh; display: flex;
+        justify-content: center; align-items: flex-start; padding: 18px;
+        color: #1e293b; position: relative; overflow-x: hidden;
+        user-select: none; -webkit-user-select: none;
+      }
+      .hidden { display: none !important; }
+
+      .app {
+        max-width: 1180px; width: 100%;
+        background: rgba(255, 255, 255, 0.86);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border-radius: 24px; padding: 26px;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08),
+          0 4px 12px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(226, 232, 240, 0.9);
+        position: relative; z-index: 1;
+      }
+      .app.blurred { filter: blur(6px); pointer-events: none; }
+
+      /* ============ KATEX TUNING ============ */
+      .katex { font-size: 1.05em !important; }
+      .katex-display { margin: 0.4em 0 !important; }
+      .katex-display > .katex { font-size: 1.15em !important; }
+      .card .katex { color: #3b0764; }
+
+      /* ============ ALERT ============ */
+      #customAlertOverlay {
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35);
+        backdrop-filter: blur(6px); display: none; justify-content: center;
+        align-items: center; z-index: 10000; padding: 16px;
+      }
+      #customAlertOverlay.active { display: flex; }
+      .alert-box {
+        background: #fff; padding: 28px 32px; border-radius: 20px;
+        max-width: 430px; width: 100%; text-align: center;
+        border: 1px solid #e2e8f0; box-shadow: 0 25px 50px rgba(15, 23, 42, 0.15);
+      }
+      .alert-box .alert-icon { font-size: 2.8rem; margin-bottom: 8px; }
+      .alert-box .alert-message {
+        font-size: 1.03rem; color: #1e293b; line-height: 1.55; margin-bottom: 20px;
+      }
+      .alert-btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+      .alert-btn {
+        background: #7c3aed; color: #fff; border: none; padding: 10px 24px;
+        border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: .2s;
+      }
+      .alert-btn:hover { background: #6d28d9; }
+      .alert-btn-cancel { background: #f1f5f9; color: #475569; }
+      .alert-btn-cancel:hover { background: #e2e8f0; }
+
+      /* ============ BERANDA ============ */
+      #berandaPage { text-align: center; padding: 20px 0 10px; }
+      #berandaPage h1 {
+        font-size: 2.4rem;
+        background: linear-gradient(135deg, #0ea5e9, #7c3aed, #f59e0b);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text; margin-bottom: 8px; line-height: 1.2;
+      }
+      #berandaPage .sub { color: #64748b; font-size: 1.02rem; margin-bottom: 6px; }
+      .chip-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 18px 0 22px; }
+      .chip {
+        background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;
+        padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;
+      }
+      .form-group { max-width: 340px; margin: 14px auto; text-align: left; }
+      .form-group label { display: block; font-weight: 700; color: #334155; margin-bottom: 6px; font-size: 0.92rem; }
+      .form-group input, .form-group select {
+        width: 100%; padding: 12px 16px; background: #fff;
+        border: 2px solid #e2e8f0; border-radius: 12px; color: #0f172a;
+        font-size: 1rem; transition: .2s;
+      }
+      .form-group input:focus, .form-group select:focus {
+        border-color: #7c3aed; outline: none; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff;
+        border: none; padding: 14px 42px; font-size: 1.05rem; font-weight: 700;
+        border-radius: 30px; cursor: pointer; transition: .2s; margin-top: 8px;
+        box-shadow: 0 6px 16px rgba(124, 58, 237, 0.28);
+      }
+      .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(124, 58, 237, 0.38); }
+
+      /* ============ TOPBAR ============ */
+      .topbar {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 12px; flex-wrap: wrap; padding-bottom: 14px; margin-bottom: 16px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; color: #0f172a; }
+      .brand .logo {
+        width: 36px; height: 36px; display: grid; place-items: center;
+        border-radius: 11px; background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+        font-size: 1.1rem; color: #fff;
+      }
+      .user-pill {
+        font-size: 0.82rem; color: #6d28d9; background: #f5f3ff;
+        border: 1px solid #ddd6fe; padding: 6px 14px; border-radius: 20px; font-weight: 700;
+      }
+      .btn-ghost {
+        background: #f8fafc; color: #334155; border: 1px solid #e2e8f0;
+        padding: 9px 18px; border-radius: 12px; font-size: 0.88rem;
+        font-weight: 700; cursor: pointer; transition: .2s;
+      }
+      .btn-ghost:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+      /* ============ LAYOUT ============ */
+      .materi-grid { display: grid; grid-template-columns: 236px 1fr; gap: 20px; align-items: start; }
+      .sidebar { display: flex; flex-direction: column; gap: 6px; position: sticky; top: 18px; }
+      .sidebar-title {
+        font-size: 0.72rem; letter-spacing: 1.4px; text-transform: uppercase;
+        color: #94a3b8; font-weight: 800; padding: 0 6px 4px;
+      }
+      .nav-item {
+        display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+        border-radius: 12px; background: #f8fafc; border: 1px solid transparent;
+        color: #64748b; font-size: 0.87rem; font-weight: 700; cursor: pointer;
+        transition: .18s; text-align: left;
+      }
+      .nav-item:hover { background: #f1f5f9; color: #0f172a; }
+      .nav-item.active {
+        background: linear-gradient(90deg, #f0f9ff, #f5f3ff);
+        border-color: #bae6fd; color: #0369a1;
+      }
+      .nav-item .num {
+        font-size: 0.72rem; width: 22px; height: 22px; display: grid;
+        place-items: center; border-radius: 7px; background: #e2e8f0;
+        color: #475569; flex-shrink: 0;
+      }
+      .nav-item.active .num { background: #0ea5e9; color: #fff; }
+
+      /* ============ SLIDE ============ */
+      .slide-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+      .slide-icon {
+        font-size: 1.6rem; width: 48px; height: 48px; display: grid;
+        place-items: center; border-radius: 14px;
+        background: linear-gradient(135deg, #f0f9ff, #f5f3ff);
+        border: 1px solid #bae6fd; flex-shrink: 0;
+      }
+      .slide-head h2 { font-size: 1.28rem; color: #0f172a; line-height: 1.3; }
+      .slide-sub { font-size: 0.86rem; color: #64748b; margin-top: 2px; }
+
+      .card {
+        background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+        padding: 18px 20px; margin-bottom: 16px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+      }
+      .card h3 {
+        font-size: 1.02rem; color: #0369a1; margin-bottom: 10px;
+        display: flex; align-items: center; gap: 8px;
+      }
+      .card p { font-size: 0.94rem; color: #334155; line-height: 1.85; margin-bottom: 8px; }
+      .card ul { margin: 8px 0 8px 20px; }
+      .card li { font-size: 0.93rem; color: #334155; line-height: 1.9; }
+      .card b, .card strong { color: #0f172a; }
+
+      .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 10px; }
+      .mini-card {
+        background: #f8fafc; border: 1px solid #e2e8f0;
+        border-radius: 13px; padding: 14px 16px;
+      }
+      .mini-card h4 { font-size: 0.92rem; color: #b45309; margin-bottom: 6px; }
+      .mini-card p { font-size: 0.87rem; color: #475569; line-height: 2; margin: 0; }
+
+      .rumus {
+        background: linear-gradient(135deg, #f0f9ff, #f5f3ff);
+        border: 1px solid #bae6fd; border-left: 4px solid #0ea5e9;
+        border-radius: 12px; padding: 16px 20px;
+        color: #0369a1; margin: 12px 0; line-height: 1.7;
+        overflow-x: auto;
+      }
+      .rumus .lbl {
+        font-family: 'Segoe UI', sans-serif; font-size: 0.78rem;
+        color: #0284c7; font-weight: 800; letter-spacing: 0.6px;
+        text-transform: uppercase; display: block; margin-bottom: 8px;
+      }
+
+      .contoh {
+        background: #fff7ed; border: 1px solid #fed7aa;
+        border-left: 4px solid #f59e0b; border-radius: 12px;
+        padding: 14px 18px; margin: 12px 0;
+      }
+      .contoh h4 { color: #b45309; font-size: 0.9rem; margin-bottom: 8px; letter-spacing: .4px; }
+      .contoh p { font-size: 0.93rem; line-height: 2; color: #334155; margin-bottom: 4px; }
+      .contoh .step {
+        color: #475569; padding-left: 12px;
+        border-left: 2px solid #fed7aa; margin: 6px 0 6px 4px;
+      }
+
+      /* Canvas */
+      .canvas-wrap {
+        position: relative; width: 100%; height: 380px; border-radius: 16px;
+        overflow: hidden; border: 1px solid #e2e8f0; background: #fff;
+        margin: 12px 0; box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.03);
+      }
+      .canvas-wrap canvas { display: block; width: 100%; height: 100%; }
+
+      .controls {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px; margin-top: 10px; align-items: end;
+      }
+      .ctrl label {
+        display: block; font-size: 0.76rem; color: #64748b;
+        margin-bottom: 4px; font-weight: 800; letter-spacing: .3px;
+      }
+      .ctrl input {
+        width: 100%; padding: 9px 12px; border-radius: 10px;
+        border: 1.5px solid #e2e8f0; background: #fff; color: #0f172a;
+        font-size: 0.92rem; font-weight: 700; transition: .18s;
+      }
+      .ctrl input:focus {
+        outline: none; border-color: #0ea5e9;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.13);
+      }
+      .btn-mini {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff;
+        border: none; padding: 10px 18px; border-radius: 10px;
+        font-weight: 800; font-size: 0.87rem; cursor: pointer;
+        transition: .18s; white-space: nowrap;
+        box-shadow: 0 3px 10px rgba(14, 165, 233, 0.22);
+      }
+      .btn-mini:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(14, 165, 233, 0.32); }
+
+      .result-line {
+        margin-top: 12px; padding: 14px 18px; border-radius: 12px;
+        background: #f8fafc; border: 1px solid #bae6fd;
+        font-size: 0.95rem; color: #334155; line-height: 2;
+        overflow-x: auto;
+      }
+      .result-line b { color: #0369a1; }
+
+      .tabel {
+        width: 100%; border-collapse: collapse; font-size: 0.9rem;
+        margin-top: 8px; overflow: hidden; border-radius: 12px;
+        border: 1px solid #e2e8f0;
+      }
+      .tabel th, .tabel td {
+        padding: 10px 14px; border-bottom: 1px solid #e2e8f0; text-align: left;
+        vertical-align: middle;
+      }
+      .tabel th {
+        color: #0369a1; font-weight: 800; background: #f0f9ff;
+        font-size: 0.82rem; letter-spacing: .3px;
+      }
+      .tabel td:first-child { color: #b45309; font-weight: 800; }
+      .tabel tr:last-child td { border-bottom: none; }
+      .tabel tr:hover td { background: #f8fafc; }
+
+      .slide-nav {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 12px; margin-top: 20px; padding-top: 16px;
+        border-top: 1px solid #e2e8f0; flex-wrap: wrap;
+      }
+      .nav-btn {
+        background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;
+        padding: 11px 26px; border-radius: 12px; font-size: 0.92rem;
+        font-weight: 800; cursor: pointer; transition: .2s;
+        display: flex; align-items: center; gap: 8px;
+      }
+      .nav-btn:hover:not(:disabled) { background: #e2e8f0; }
+      .nav-btn:disabled { opacity: .4; cursor: not-allowed; }
+      .nav-btn-primary {
+        background: #7c3aed; color: #fff; border-color: #7c3aed;
+        box-shadow: 0 4px 12px rgba(124,58,237,.25);
+      }
+      .nav-btn-primary:hover:not(:disabled) { background: #6d28d9; }
+      .nav-btn-success {
+        background: #059669; color: #fff; border-color: #059669;
+        box-shadow: 0 4px 12px rgba(5,150,105,.25);
+      }
+      .nav-btn-success:hover:not(:disabled) { background: #047857; }
+      #slideIndicator {
+        color: #64748b; font-weight: 800; font-size: 0.85rem;
+        background: #f8fafc; padding: 5px 16px; border-radius: 20px;
+        border: 1px solid #e2e8f0;
+      }
+
+      /* ============ QUIZ ============ */
+      #quizHeader {
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; margin-bottom: 16px; padding-bottom: 12px;
+        border-bottom: 1px solid #e2e8f0; gap: 10px;
+      }
+      #quizHeader h2 { font-size: 1.15rem; color: #0f172a; }
+      .head-right { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+      #progressDisplay {
+        color: #7c3aed; font-weight: 800; font-size: 0.9rem;
+        background: #f5f3ff; padding: 4px 16px; border-radius: 20px;
+        border: 1px solid #ddd6fe;
+      }
+      #timerDisplay {
+        font-size: 1.3rem; font-weight: 800; color: #b45309;
+        background: #fffbeb; padding: 4px 18px; border-radius: 20px;
+        border: 1px solid #fde68a; font-variant-numeric: tabular-nums;
+      }
+      #timerDisplay.warning {
+        color: #b91c1c; background: #fef2f2; border-color: #fecaca;
+        animation: pulse 1s infinite;
+      }
+      @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+
+      #soalContainer { min-height: 300px; }
+      .soal-card {
+        background: #fff; border-radius: 16px; padding: 22px 26px;
+        border: 1px solid #e2e8f0; border-left: 5px solid #0ea5e9;
+        animation: fadeSlide .3s ease;
+        box-shadow: 0 4px 12px rgba(15,23,42,.04);
+      }
+      @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+      .nomor-soal { font-weight: 800; color: #0369a1; font-size: 0.92rem; margin-bottom: 6px; }
+      .pertanyaan {
+        font-weight: 700; font-size: 1.02rem; color: #0f172a;
+        line-height: 1.9; margin-bottom: 18px;
+      }
+      .opsi-vertical { display: flex; flex-direction: column; gap: 10px; }
+      .opsi-vertical label {
+        display: flex; align-items: center; gap: 14px; padding: 12px 18px;
+        background: #f8fafc; border-radius: 10px; border: 2px solid #e2e8f0;
+        cursor: pointer; transition: all .2s; color: #334155; font-size: 0.96rem;
+      }
+      .opsi-vertical label:hover { border-color: #7dd3fc; background: #f0f9ff; }
+      .opsi-vertical label.selected {
+        border-color: #0ea5e9; background: #f0f9ff;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+      }
+      .option-label { font-weight: 800; color: #0369a1; min-width: 24px; }
+      .option-text { flex: 1; }
+      .opsi-vertical input[type='radio'] {
+        accent-color: #0ea5e9; width: 18px; height: 18px;
+        flex-shrink: 0; cursor: pointer;
+      }
+
+      #resultPage { text-align: center; }
+      .done-message {
+        background: #fffbeb; padding: 10px 16px; border-radius: 20px;
+        display: inline-block; color: #b45309; font-weight: 800;
+        border: 1px solid #fde68a; margin-bottom: 14px; font-size: 0.92rem;
+      }
+      .skor-angka {
+        font-size: 3.8rem; font-weight: 900;
+        background: linear-gradient(135deg, #0ea5e9, #7c3aed, #f59e0b);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text; display: inline-block; padding: 6px 30px; margin: 10px 0;
+      }
+      .detail {
+        background: #f8fafc; padding: 16px; border-radius: 12px;
+        margin: 14px auto; font-size: 0.95rem; color: #334155;
+        border: 1px solid #e2e8f0; text-align: left; max-width: 360px;
+      }
+      .detail p { margin-bottom: 6px; }
+      .status-send {
+        margin: 10px auto; padding: 10px; border-radius: 8px;
+        font-weight: 800; font-size: 0.88rem; background: #f8fafc; max-width: 360px;
+      }
+      .status-send.success { color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; }
+      .status-send.error { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; }
+      .status-send.sending { color: #b45309; background: #fffbeb; border: 1px solid #fde68a; }
+      .btn-secondary {
+        background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;
+        padding: 12px 28px; border-radius: 30px; font-size: 0.94rem;
+        font-weight: 800; cursor: pointer; transition: .2s; margin-top: 10px;
+      }
+      .btn-secondary:hover { background: #e2e8f0; }
+
+      #fullscreenWarning {
+        position: fixed; inset: 0; background: rgba(255,255,255,.75);
+        backdrop-filter: blur(8px); display: none; justify-content: center;
+        align-items: center; z-index: 9999; padding: 16px;
+      }
+      .warning-box {
+        background: #fff; padding: 32px; border-radius: 20px;
+        max-width: 420px; text-align: center; border: 1px solid #fecaca;
+        border-top: 4px solid #dc2626;
+        box-shadow: 0 25px 50px rgba(15,23,42,.18);
+      }
+      .warning-box h3 { font-size: 1.5rem; color: #b91c1c; margin-bottom: 8px; }
+      .warning-box p { font-size: 0.94rem; color: #334155; margin: 8px 0; }
+      .warning-box .timer-big { font-size: 2.8rem; font-weight: 900; color: #b45309; margin: 8px 0; }
+      .btn-back {
+        background: #7c3aed; color: #fff; border: none; padding: 10px 24px;
+        border-radius: 20px; font-weight: 800; cursor: pointer; margin-top: 10px;
+        box-shadow: 0 4px 12px rgba(124,58,237,.28);
+      }
+      .btn-back:hover { background: #6d28d9; }
+
+      .focus-loss-badge {
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: #dc2626; color: #fff; padding: 9px 22px; border-radius: 20px;
+        font-weight: 800; font-size: 0.88rem; display: none; z-index: 999;
+        box-shadow: 0 8px 24px rgba(220,38,38,.35); pointer-events: none;
+      }
+      .focus-loss-badge.active { display: block; animation: pulseBadge 1s infinite; }
+      @keyframes pulseBadge { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+
+      @media (max-width: 900px) {
+        .materi-grid { grid-template-columns: 1fr; }
+        .sidebar { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 6px; gap: 8px; }
+        .sidebar-title { display: none; }
+        .nav-item { flex: 0 0 auto; white-space: nowrap; }
+      }
+      @media (max-width: 640px) {
+        .app { padding: 16px; border-radius: 18px; }
+        body { padding: 10px; }
+        #berandaPage h1 { font-size: 1.65rem; }
+        .slide-head h2 { font-size: 1.06rem; }
+        .canvas-wrap { height: 300px; }
+        .soal-card { padding: 16px 18px; }
+        .pertanyaan { font-size: 0.95rem; }
+        .opsi-vertical label { padding: 10px 14px; font-size: 0.89rem; }
+        .slide-nav { flex-direction: column; align-items: stretch; }
+        .nav-btn { justify-content: center; }
+        .skor-angka { font-size: 3rem; }
+        .katex { font-size: 1em !important; }
+      }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(14,165,233,.28); border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(14,165,233,.5); }
+    </style>
+  </head>
+  <body>
+    <div id="aurora-container"></div>
+
+    <div id="customAlertOverlay">
+      <div class="alert-box">
+        <div class="alert-icon" id="alertIcon">⚠️</div>
+        <div class="alert-message" id="alertMessage">Pesan</div>
+        <div class="alert-btn-group" id="alertBtnGroup"></div>
+      </div>
+    </div>
+
+    <div id="fullscreenWarning">
+      <div class="warning-box">
+        <h3>⛔ Keluar dari Layar Penuh</h3>
+        <p>Anda keluar dari mode fullscreen.</p>
+        <p>Kembalikan dalam <span id="countdownTimer">10</span> detik, atau latihan berakhir.</p>
+        <div class="timer-big" id="timerWarning">10</div>
+        <button class="btn-back" id="btnBackFullscreen">↩ Kembali ke Fullscreen</button>
+      </div>
+    </div>
+
+    <div id="focusLossBadge" class="focus-loss-badge">
+      ⚠️ Jendela latihan tidak aktif! Kembali dalam 3 detik atau latihan berakhir.
+    </div>
+
+    <div class="app" id="appContainer">
+      <!-- ============ BERANDA ============ -->
+      <section id="berandaPage">
+        <h1>📈 Fungsi Kuadrat</h1>
+        <p class="sub">Media Pembelajaran Interaktif — Grafik, Karakteristik &amp; Penerapan</p>
+        <div class="chip-row">
+          <span class="chip">🔹 Titik Puncak</span>
+          <span class="chip">🔹 Sumbu Simetri</span>
+          <span class="chip">🔹 Diskriminan</span>
+          <span class="chip">🔹 Sketsa Grafik</span>
+        </div>
+
+        <div class="form-group">
+          <label for="namaInput">Nama Lengkap</label>
+          <input type="text" id="namaInput" placeholder="Ketik nama Anda..." autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label for="kelasSelect">Kelas</label>
+          <select id="kelasSelect">
+            <option value="">-- Pilih Kelas --</option>
+            <option value="10.A">10.A</option>
+            <option value="10.B">10.B</option>
+            <option value="10.C">10.C</option>
+            <option value="10.D">10.D</option>
+          </select>
+        </div>
+
+        <button class="btn-primary" id="btnStart" type="button">🚀 Mulai Belajar</button>
+        <p style="margin-top: 14px; color: #94a3b8; font-size: 0.82rem">
+          Pelajari materi, mainkan simulasi grafik, lalu uji pemahaman dengan latihan soal.
+        </p>
+      </section>
+
+      <!-- ============ MATERI ============ -->
+      <section id="materiPage" class="hidden">
+        <div class="topbar">
+          <div class="brand">
+            <div class="logo">📈</div>
+            <div>
+              Fungsi Kuadrat
+              <div style="font-size:.72rem;color:#94a3b8;font-weight:700;margin-top:1px">\(f(x) = ax^{2} + bx + c\)</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span class="user-pill" id="userPill">—</span>
+            <button class="btn-ghost" id="btnToQuizTop">📝 Latihan Soal</button>
+          </div>
+        </div>
+
+        <div class="materi-grid">
+          <aside class="sidebar" id="sidebar">
+            <div class="sidebar-title">Daftar Materi</div>
+          </aside>
+
+          <main>
+            <div id="slideContent"></div>
+            <div class="slide-nav">
+              <button class="nav-btn" id="btnSlidePrev"><span>◀</span> Sebelumnya</button>
+              <span id="slideIndicator">Materi 1 / 6</span>
+              <button class="nav-btn nav-btn-primary" id="btnSlideNext">Selanjutnya <span>▶</span></button>
+            </div>
+          </main>
+        </div>
+      </section>
+
+      <!-- ============ QUIZ ============ -->
+      <section id="quizPage" class="hidden">
+        <div id="quizHeader">
+          <h2>📝 Latihan Soal — Fungsi Kuadrat</h2>
+          <div class="head-right">
+            <span id="progressDisplay">1 / 10</span>
+            <span id="timerDisplay">20:00</span>
+          </div>
+        </div>
+
+        <div id="soalContainer"></div>
+
+        <div class="slide-nav">
+          <button class="nav-btn" id="btnPrev" disabled><span>◀</span> Sebelumnya</button>
+          <button class="nav-btn nav-btn-success" id="btnSubmitQuiz">📨 Kirim Jawaban</button>
+          <button class="nav-btn nav-btn-primary" id="btnNext">Selanjutnya <span>▶</span></button>
+        </div>
+      </section>
+
+      <!-- ============ RESULT ============ -->
+      <section id="resultPage" class="hidden">
+        <div class="done-message">✅ Latihan Selesai</div>
+        <h2 style="color:#0f172a">🏆 Hasil Anda</h2>
+        <div class="skor-angka" id="skorAkhir">0</div>
+        <p style="color:#64748b;font-size:.92rem">Nilai Akhir (Skala 0 – 100)</p>
+        <div class="detail">
+          <p><strong>Nama:</strong> <span id="resultNama">-</span></p>
+          <p><strong>Kelas:</strong> <span id="resultKelas">-</span></p>
+          <p><strong>Benar:</strong> <span id="resultBenar">-</span></p>
+        </div>
+        <div id="statusSpreadsheet" class="status-send sending">⏳ Mengirim nilai ...</div>
+        <button class="btn-secondary" id="btnClose" type="button">Tutup / Muat Ulang</button>
+      </section>
+    </div>
+
+    <script>
+      /* =====================================================
+         KATEX RENDER HELPER
+      ===================================================== */
+      function renderMath(el) {
+        if (!el || typeof window.renderMathInElement !== 'function') return;
+        try {
+          window.renderMathInElement(el, {
+            delimiters: [
+              { left: '\\[', right: '\\]', display: true },
+              { left: '\\(', right: '\\)', display: false },
+              { left: '$$', right: '$$', display: true },
+            ],
+            throwOnError: false,
+            errorColor: '#dc2626',
+            ignoredClasses: ['no-math'],
+          });
+        } catch (e) {
+          console.warn('KaTeX render error', e);
+        }
+      }
+
+      window.addEventListener('load', function () {
+        setTimeout(() => renderMath(document.getElementById('appContainer')), 100);
+        setTimeout(() => renderMath(document.getElementById('appContainer')), 500);
+      });
+
+      /* =====================================================
+         1. AURORA PASTEL
+      ===================================================== */
+      (function () {
+        const container = document.getElementById('aurora-container');
+        const colorSets = [
+          [
+            'rgba(186, 230, 253, 0.35)', 'rgba(196, 181, 253, 0.30)',
+            'rgba(253, 186, 116, 0.30)', 'rgba(167, 243, 208, 0.28)',
+            'rgba(251, 207, 232, 0.32)',
+          ],
+          [
+            'rgba(147, 197, 253, 0.35)', 'rgba(253, 230, 138, 0.32)',
+            'rgba(196, 181, 253, 0.30)', 'rgba(165, 243, 252, 0.30)',
+            'rgba(249, 168, 212, 0.30)',
+          ],
+          [
+            'rgba(165, 243, 252, 0.32)', 'rgba(216, 180, 254, 0.28)',
+            'rgba(252, 211, 77, 0.28)', 'rgba(134, 239, 172, 0.28)',
+            'rgba(253, 186, 116, 0.30)',
+          ],
+        ];
+        let cs = 0;
+        const auroras = [];
+        for (let i = 0; i < 5; i++) {
+          const a = document.createElement('div');
+          a.className = 'aurora';
+          a.style.background = colorSets[0][i];
+          container.appendChild(a);
+          auroras.push(a);
+          setTimeout(() => (a.style.opacity = '1'), i * 300);
+          (function loop() {
+            let x = Math.random() * 100, y = Math.random() * 100;
+            let xs = (Math.random() - 0.5) * 0.08, ys = (Math.random() - 0.5) * 0.08;
+            function tick() {
+              x += xs; y += ys;
+              if (Math.random() < 0.005) {
+                xs = (Math.random() - 0.5) * 0.08;
+                ys = (Math.random() - 0.5) * 0.08;
+              }
+              if (x > 120) x = -20; if (x < -20) x = 120;
+              if (y > 120) y = -20; if (y < -20) y = 120;
+              const p = 0.5 + i * 0.1;
+              a.style.transform = `translate(${x * p}%, ${y * p}%) scale(${1 + Math.sin(Date.now() * 0.001 * (i + 1)) * 0.15})`;
+              requestAnimationFrame(tick);
+            }
+            tick();
+          })();
+        }
+        setInterval(() => {
+          cs = (cs + 1) % colorSets.length;
+          auroras.forEach(a => a.style.opacity = '0');
+          setTimeout(() => {
+            auroras.forEach((a, i) => {
+              a.style.background = colorSets[cs][i];
+              a.style.opacity = '1';
+            });
+          }, 900);
+        }, 15000);
+      })();
+
+      /* =====================================================
+         2. CUSTOM ALERT
+      ===================================================== */
+      function customAlert(message, icon, withCancel) {
+        icon = icon || '⚠️';
+        return new Promise((resolve) => {
+          const overlay = document.getElementById('customAlertOverlay');
+          const msgEl = document.getElementById('alertMessage');
+          const iconEl = document.getElementById('alertIcon');
+          const btnGroup = document.getElementById('alertBtnGroup');
+          const app = document.getElementById('appContainer');
+          msgEl.textContent = message;
+          iconEl.textContent = icon;
+          overlay.classList.add('active');
+          app.classList.add('blurred');
+          btnGroup.innerHTML = '';
+          const close = (val) => {
+            overlay.classList.remove('active');
+            app.classList.remove('blurred');
+            resolve(val);
+          };
+          if (withCancel) {
+            const bc = document.createElement('button');
+            bc.className = 'alert-btn alert-btn-cancel';
+            bc.textContent = 'Batal';
+            bc.onclick = () => close(false);
+            const bo = document.createElement('button');
+            bo.className = 'alert-btn';
+            bo.textContent = 'Ya / Lanjut';
+            bo.onclick = () => close(true);
+            btnGroup.appendChild(bc); btnGroup.appendChild(bo);
+            bo.focus();
+          } else {
+            const bo = document.createElement('button');
+            bo.className = 'alert-btn';
+            bo.textContent = 'OK';
+            bo.onclick = () => close(true);
+            btnGroup.appendChild(bo);
+            bo.focus();
+          }
+        });
+      }
+
+      /* =====================================================
+         3. HELPERS
+      ===================================================== */
+      const $ = (id) => document.getElementById(id);
+      function num(id, def) {
+        const el = $(id); if (!el) return def || 0;
+        const v = parseFloat(el.value);
+        return isNaN(v) ? (def || 0) : v;
+      }
+      function fmtNum(v) {
+        const r = Math.round(v * 1000) / 1000;
+        return String(r).replace('-', '−');
+      }
+      function polyTeX(a, b, c, v) {
+        v = v || 'x';
+        let s = '';
+        if (Math.abs(a) > 1e-9) {
+          if (Math.abs(a - 1) < 1e-9) s += v + '^{2}';
+          else if (Math.abs(a + 1) < 1e-9) s += '-' + v + '^{2}';
+          else s += fmtNum(a) + v + '^{2}';
+        }
+        if (Math.abs(b) > 1e-9) {
+          if (s) s += b > 0 ? ' + ' : ' - ';
+          else if (b < 0) s += '-';
+          const ab = Math.abs(b);
+          if (Math.abs(ab - 1) < 1e-9) s += v;
+          else s += fmtNum(ab) + v;
+        }
+        if (Math.abs(c) > 1e-9 || !s) {
+          if (s) s += c > 0 ? ' + ' : ' - ';
+          else if (c < 0) s += '-';
+          s += fmtNum(Math.abs(c));
+        }
+        return s;
+      }
+
+      // Analisis fungsi kuadrat
+      function analisisFungsi(a, b, c) {
+        const disc = b * b - 4 * a * c;
+        const xp = -b / (2 * a);
+        const yp = a * xp * xp + b * xp + c;
+        let akar = [];
+        let jenis = '';
+        if (disc > 0) {
+          const sq = Math.sqrt(disc);
+          akar = [(-b + sq) / (2 * a), (-b - sq) / (2 * a)];
+          jenis = 'Memotong sumbu x di dua titik';
+        } else if (Math.abs(disc) < 1e-12) {
+          akar = [xp];
+          jenis = 'Menyinggung sumbu x (satu titik)';
+        } else {
+          jenis = 'Tidak memotong sumbu x';
+        }
+        return { disc, xp, yp, akar, jenis };
+      }
+
+      /* =====================================================
+         4. PLANE (GRAFIK)
+      ===================================================== */
+      const activePlanes = [];
+      class Plane {
+        constructor(canvas, opts) {
+          opts = opts || {};
+          this.canvas = canvas;
+          this.ctx = canvas.getContext('2d');
+          this.range = opts.range || 10;
+          this.resize();
+          activePlanes.push(this);
+        }
+        resize() {
+          const rect = this.canvas.getBoundingClientRect();
+          const dpr = window.devicePixelRatio || 1;
+          const w = Math.max(rect.width, 120);
+          const h = Math.max(rect.height, 120);
+          this.canvas.width = Math.round(w * dpr);
+          this.canvas.height = Math.round(h * dpr);
+          this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          this.w = w; this.h = h;
+          this.unit = Math.min(w, h) / (2 * this.range + 1);
+          this.cx = w / 2; this.cy = h / 2;
+        }
+        X(x) { return this.cx + x * this.unit; }
+        Y(y) { return this.cy - y * this.unit; }
+        reset() {
+          const ctx = this.ctx;
+          ctx.clearRect(0, 0, this.w, this.h);
+          const g = ctx.createLinearGradient(0, 0, 0, this.h);
+          g.addColorStop(0, '#ffffff');
+          g.addColorStop(1, '#f8fafc');
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, this.w, this.h);
+          const R = this.range;
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = 'rgba(148,163,184,0.20)';
+          ctx.beginPath();
+          for (let i = -R; i <= R; i++) {
+            const x = Math.round(this.X(i)) + 0.5;
+            const y = Math.round(this.Y(i)) + 0.5;
+            ctx.moveTo(x, 0); ctx.lineTo(x, this.h);
+            ctx.moveTo(0, y); ctx.lineTo(this.w, y);
+          }
+          ctx.stroke();
+          const x0 = Math.round(this.X(0)) + 0.5;
+          const y0 = Math.round(this.Y(0)) + 0.5;
+          ctx.strokeStyle = 'rgba(71,85,105,0.7)';
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(0, y0); ctx.lineTo(this.w, y0);
+          ctx.moveTo(x0, 0); ctx.lineTo(x0, this.h);
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(71,85,105,0.9)';
+          ctx.font = '600 11px system-ui, sans-serif';
+          const step = this.unit < 15 ? 2 : 1;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+          for (let i = -R; i <= R; i += step) {
+            if (i === 0) continue;
+            const px = this.X(i), py = this.Y(i);
+            if (px > 12 && px < this.w - 12) {
+              const ly = Math.min(Math.max(y0 + 4, 2), this.h - 15);
+              ctx.fillText(String(i), px, ly);
+            }
+            if (py > 12 && py < this.h - 12) {
+              ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+              const lx = Math.min(Math.max(x0 - 6, 20), this.w - 4);
+              ctx.fillText(String(i), lx, py);
+              ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            }
+          }
+          ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+          ctx.fillStyle = 'rgba(71,85,105,0.85)';
+          ctx.fillText('O', x0 - 5, y0 + 4);
+          ctx.textAlign = 'left';
+          ctx.fillText('x', this.w - 16, y0 + 6);
+          ctx.fillText('y', x0 + 8, 6);
+        }
+        point(p, opt) {
+          opt = opt || {};
+          const ctx = this.ctx;
+          const color = opt.color || '#0ea5e9';
+          const r = opt.r || 5.5;
+          const X = this.X(p.x), Y = this.Y(p.y);
+          ctx.save();
+          ctx.shadowColor = 'rgba(255,255,255,0.9)';
+          ctx.shadowBlur = 6;
+          ctx.fillStyle = color;
+          ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+          ctx.lineWidth = 1.5; ctx.stroke();
+          ctx.restore();
+          if (opt.label) {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.font = 'bold 12px system-ui, sans-serif';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+            ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+            ctx.lineWidth = 3;
+            ctx.strokeText(opt.label, X + 9, Y - 7);
+            ctx.fillText(opt.label, X + 9, Y - 7);
+            ctx.restore();
+          }
+        }
+        polyline(pts, opt) {
+          if (!pts || pts.length < 2) return;
+          opt = opt || {};
+          const ctx = this.ctx;
+          ctx.save();
+          ctx.setLineDash(opt.dash || []);
+          ctx.strokeStyle = opt.color || '#0ea5e9';
+          ctx.lineWidth = opt.width || 2.4;
+          ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+          ctx.beginPath();
+          for (let i = 0; i < pts.length; i++) {
+            const X = this.X(pts[i].x), Y = this.Y(pts[i].y);
+            if (i === 0) ctx.moveTo(X, Y); else ctx.lineTo(X, Y);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+        sampleFunc(fn, xmin, xmax, n) {
+          xmin = xmin === undefined ? -this.range * 2 : xmin;
+          xmax = xmax === undefined ? this.range * 2 : xmax;
+          n = n || 240;
+          const pts = [];
+          for (let i = 0; i <= n; i++) {
+            const x = xmin + ((xmax - xmin) * i) / n;
+            let y = fn(x);
+            if (!isFinite(y)) continue;
+            y = Math.max(-500, Math.min(500, y));
+            pts.push({ x: x, y: y });
+          }
+          return pts;
+        }
+      }
+      window.addEventListener('resize', () => {
+        activePlanes.forEach(p => { p.resize(); if (p.onResize) p.onResize(); });
+      });
+
+      /* =====================================================
+         5. SLIDES
+      ===================================================== */
+      const slides = [];
+
+      /* ---------- SLIDE 0 : PENGANTAR & BENTUK UMUM ---------- */
+      slides.push({
+        title: 'Pengantar',
+        icon: '📖',
+        sub: 'Bentuk umum fungsi kuadrat',
+        html: `
+        <div class="slide-head">
+          <span class="slide-icon">📖</span>
+          <div>
+            <h2>Bentuk Umum Fungsi Kuadrat</h2>
+            <p class="slide-sub">Fungsi yang membentuk grafik parabola</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🔍 Apa itu Fungsi Kuadrat?</h3>
+          <p>Fungsi kuadrat adalah fungsi polinomial yang variabelnya berpangkat paling tinggi dua. Jika digambarkan pada bidang kartesius, grafiknya akan membentuk <b>kurva parabola</b> (melengkung).</p>
+          <div class="rumus">
+            <span class="lbl">Bentuk Umum</span>
+            \\[ f(x) = ax^{2} + bx + c \\qquad \\text{dengan } a \\neq 0 \\]
+          </div>
+          <p>Keterangan:</p>
+          <ul>
+            <li>\\(x\\) = variabel</li>
+            <li>\\(a\\) = koefisien \\(x^{2}\\) (dengan syarat \\(a \\neq 0\\))</li>
+            <li>\\(b\\) = koefisien \\(x\\)</li>
+            <li>\\(c\\) = konstanta</li>
+            <li>\\(a, b, c \\in \\mathbb{R}\\)</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>🧩 Unsur-unsur Parabola</h3>
+          <p>Grafik fungsi kuadrat memiliki ciri khas dan titik-titik penting, antara lain:</p>
+          <div class="grid-2">
+            <div class="mini-card">
+              <h4>1. Titik Potong Sumbu X</h4>
+              <p>Terjadi saat \\(y = 0\\). Diperoleh dari akar-akar persamaan \\(ax^{2} + bx + c = 0\\).</p>
+            </div>
+            <div class="mini-card">
+              <h4>2. Titik Potong Sumbu Y</h4>
+              <p>Terjadi saat \\(x = 0\\). Maka titik potongnya selalu di \\((0, c)\\).</p>
+            </div>
+            <div class="mini-card">
+              <h4>3. Titik Puncak (Titik Balik)</h4>
+              <p>Titik ekstrem (maksimum/minimum) dari parabola. Memiliki koordinat \\((x_p, y_p)\\).</p>
+            </div>
+            <div class="mini-card">
+              <h4>4. Sumbu Simetri</h4>
+              <p>Garis vertikal yang membagi parabola menjadi dua bagian simetris. Terletak di \\(x = x_p\\).</p>
+            </div>
+          </div>
+        </div>
+      `,
+        init: function () { renderMath($('slideContent')); },
+      });
+
+      /* ---------- SLIDE 1 : TITIK PUNCAK & SIMETRI ---------- */
+      slides.push({
+        title: 'Puncak & Simetri',
+        icon: '🎯',
+        sub: 'Menentukan titik balik parabola',
+        html: `
+        <div class="slide-head">
+          <span class="slide-icon">🎯</span>
+          <div>
+            <h2>Titik Puncak &amp; Sumbu Simetri</h2>
+            <p class="slide-sub">Rumus untuk menemukan titik balik maksimum/minimum</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📌 Rumus Titik Puncak</h3>
+          <p>Titik puncak parabola disebut juga titik balik atau titik ekstrem.</p>
+          <div class="rumus">
+            <span class="lbl">Sumbu Simetri (\\(x_p\\))</span>
+            \\[ x_p = -\\frac{b}{2a} \\]
+          </div>
+          <div class="rumus">
+            <span class="lbl">Ordinat Puncak (\\(y_p\\))</span>
+            \\[ y_p = f(x_p) \\quad \\text{atau} \\quad y_p = -\\frac{D}{4a} \\]
+            <span style="font-size:0.85em;color:#64748b;display:block;margin-top:4px">dengan \\(D = b^2 - 4ac\\)</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🎬 Visualisasi Titik Puncak</h3>
+          <p>Geser nilai \\(a, b, c\\) untuk melihat bagaimana posisi titik puncak berubah.</p>
+          <div class="canvas-wrap"><canvas id="cvPuncak"></canvas></div>
+          <div class="controls">
+            <div class="ctrl"><label>a</label><input type="number" id="pcA" value="1" step="1" /></div>
+            <div class="ctrl"><label>b</label><input type="number" id="pcB" value="-4" step="1" /></div>
+            <div class="ctrl"><label>c</label><input type="number" id="pcC" value="3" step="1" /></div>
+            <div class="ctrl"><button class="btn-mini" id="pcPlay">🔄 Gambar</button></div>
+          </div>
+          <div class="result-line" id="pcOut"></div>
+        </div>
+
+        <div class="card">
+          <h3>✏️ Contoh Soal</h3>
+          <div class="contoh">
+            <h4>Soal</h4>
+            <p>Tentukan koordinat titik puncak (titik balik) dari fungsi \\(f(x) = x^{2} + 2x - 8\\)!</p>
+            <div class="step">
+              <p><b>Penyelesaian:</b> Diketahui \\(a = 1,\\ b = 2,\\ c = -8\\).</p>
+              <p>\\[ x_p = -\\frac{b}{2a} = -\\frac{2}{2(1)} = -1 \\]</p>
+              <p>\\[ y_p = -\\frac{D}{4a} = -\\frac{2^{2} - 4(1)(-8)}{4(1)} = -\\frac{4 + 32}{4} = -\\frac{36}{4} = -9 \\]</p>
+              <p style="color:#047857"><b>Jadi titik puncaknya adalah \\(P(-1, -9)\\).</b></p>
+            </div>
+          </div>
+        </div>
+      `,
+        init: function () {
+          renderMath($('slideContent'));
+          const plane = new Plane($('cvPuncak'), { range: 10 });
+          function draw() {
+            plane.reset();
+            const a = num('pcA', 1), b = num('pcB'), c = num('pcC');
+            if (Math.abs(a) < 1e-9) {
+              $('pcOut').innerHTML = '<b style="color:#b91c1c">\\(a\\) tidak boleh 0</b>';
+              renderMath($('pcOut'));
+              return;
+            }
+            const s = analisisFungsi(a, b, c);
+            
+            // Gambar Parabola
+            const pts = plane.sampleFunc((x) => a * x * x + b * x + c, -20, 20, 300);
+            plane.polyline(pts, { color: '#0ea5e9', width: 2.6 });
+
+            // Sumbu Simetri (garis putus-putus)
+            plane.polyline([{x: s.xp, y: -20}, {x: s.xp, y: 20}], { color: '#f59e0b', width: 1.5, dash: [6, 6] });
+
+            // Titik Puncak
+            if (Math.abs(s.xp) < plane.range + 5 && Math.abs(s.yp) < plane.range + 5) {
+              plane.point({ x: s.xp, y: s.yp }, { color: '#d97706', r: 6.5, label: 'Puncak' });
+            }
+
+            const out = $('pcOut');
+            let html = 'Fungsi: \\[f(x) = ' + polyTeX(a, b, c, 'x') + '\\]';
+            html += 'Sumbu Simetri: \\[x_p = -\\frac{' + b + '}{2(' + a + ')} = ' + fmtNum(s.xp) + '\\]';
+            html += 'Titik Puncak: \\[y_p = ' + fmtNum(s.yp) + '\\]';
+            html += '<b style="color:#047857">Koordinat Puncak: \\(' + fmtNum(s.xp) + ', ' + fmtNum(s.yp) + '\\)</b>';
+            out.innerHTML = html;
+            renderMath(out);
+          }
+          ['pcA', 'pcB', 'pcC'].forEach(id => $(id).addEventListener('input', draw));
+          $('pcPlay').onclick = draw;
+          plane.onResize = draw;
+          draw();
+        },
+      });
+
+      /* ---------- SLIDE 2 : PENGARUH A, B, C ---------- */
+      slides.push({
+        title: 'Pengaruh a, b, c',
+        icon: '🔍',
+        sub: 'Karakteristik grafik',
+        html: `
+        <div class="slide-head">
+          <span class="slide-icon">🔍</span>
+          <div>
+            <h2>Pengaruh Nilai a, b, c</h2>
+            <p class="slide-sub">Membedah sifat parabola dari koefisiennya</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>1. Nilai \\(a\\) menentukan keterbukaan kurva</h3>
+          <ul>
+            <li>Jika \\(a > 0\\): Parabola <b>terbuka ke atas</b> \\(\\cup\\), memiliki titik puncak <b>minimum</b>.</li>
+            <li>Jika \\(a < 0\\): Parabola <b>terbuka ke bawah</b> \\(\\cap\\), memiliki titik puncak <b>maksimum</b>.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>2. Nilai \\(b\\) menentukan posisi sumbu simetri</h3>
+          <ul>
+            <li>Jika \\(a\\) dan \\(b\\) <b>sama tanda</b> (misal keduanya positif), maka sumbu simetri berada di <b>kiri</b> sumbu Y (\\(x_p < 0\\)).</li>
+            <li>Jika \\(a\\) dan \\(b\\) <b>berbeda tanda</b>, maka sumbu simetri berada di <b>kanan</b> sumbu Y (\\(x_p > 0\\)).</li>
+            <li>Jika \\(b = 0\\), sumbu simetri tepat di sumbu Y.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>3. Nilai \\(c\\) menentukan titik potong sumbu Y</h3>
+          <ul>
+            <li>Grafik selalu memotong sumbu Y di titik \\((0, c)\\).</li>
+            <li>Jika \\(c > 0\\): memotong sumbu Y di atas titik asal \\((0,0)\\).</li>
+            <li>Jika \\(c < 0\\): memotong sumbu Y di bawah titik asal.</li>
+            <li>Jika \\(c = 0\\): grafik melewati titik asal \\((0,0)\\).</li>
+          </ul>
+        </div>
+      `,
+        init: function () { renderMath($('slideContent')); },
+      });
+
+      /* ---------- SLIDE 3 : DISKRIMINAN ---------- */
+      slides.push({
+        title: 'Diskriminan',
+        icon: '✂️',
+        sub: 'Posisi terhadap sumbu x',
+        html: `
+        <div class="slide-head">
+          <span class="slide-icon">✂️</span>
+          <div>
+            <h2>Diskriminan &amp; Titik Potong Sumbu x</h2>
+            <p class="slide-sub">Menganalisis perpotongan kurva dengan sumbu x</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📌 Konsep</h3>
+          <p>Nilai diskriminan \\(D = b^2 - 4ac\\) menentukan posisi kurva terhadap sumbu \\(x\\) (apakah memotong, menyinggung, atau tidak sama sekali).</p>
+          <table class="tabel">
+            <tr><th>Nilai D</th><th>Posisi Grafik</th><th>Definit</th></tr>
+            <tr><td>\\(D > 0\\)</td><td>Memotong sumbu \\(x\\) di dua titik berbeda</td><td>-</td></tr>
+            <tr><td>\\(D = 0\\)</td><td>Menyinggung sumbu \\(x\\) (satu titik)</td><td>-</td></tr>
+            <tr><td>\\(D < 0\\)</td><td>Tidak memotong sumbu \\(x\\)</td><td>Definit (selalu positif/negatif)</td></tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>🎬 Visualisasi Diskriminan</h3>
+          <p>Ubah nilai a, b, c untuk melihat perubahan nilai D dan posisinya.</p>
+          <div class="canvas-wrap"><canvas id="cvDisk"></canvas></div>
+          <div class="controls">
+            <div class="ctrl"><label>a</label><input type="number" id="dsA" value="1" step="1" /></div>
+            <div class="ctrl"><label>b</label><input type="number" id="dsB" value="-2" step="1" /></div>
+            <div class="ctrl"><label>c</label><input type="number" id="dsC" value="-3" step="1" /></div>
+            <div class="ctrl"><button class="btn-mini" id="dsPlay">🔄 Gambar</button></div>
+          </div>
+          <div class="result-line" id="dsOut"></div>
+        </div>
+
+        <div class="card">
+          <h3>✏️ Contoh Soal</h3>
+          <div class="contoh">
+            <h4>Soal</h4>
+            <p>Tentukan titik potong dengan sumbu-x dari fungsi kuadrat \\(f(x) = 2x^{2} - 14x + 24\\)!</p>
+            <div class="step">
+              <p><b>Penyelesaian:</b> Syarat titik potong sumbu-x adalah saat \\(y = 0\\).</p>
+              <p>\\[ 2x^{2} - 14x + 24 = 0 \\]</p>
+              <p>Bagi kedua ruas dengan 2:</p>
+              <p>\\[ x^{2} - 7x + 12 = 0 \\]</p>
+              <p>Faktorkan:</p>
+              <p>\\[ (x - 3)(x - 4) = 0 \\]</p>
+              <p>\\(x = 3\\) atau \\(x = 4\\).</p>
+              <p style="color:#047857"><b>Jadi titik potongnya adalah \\(A(3, 0)\\) dan \\(B(4, 0)\\).</b></p>
+            </div>
+          </div>
+        </div>
+      `,
+        init: function () {
+          renderMath($('slideContent'));
+          const plane = new Plane($('cvDisk'), { range: 10 });
+          function draw() {
+            plane.reset();
+            const a = num('dsA', 1), b = num('dsB'), c = num('dsC');
+            if (Math.abs(a) < 1e-9) {
+              $('dsOut').innerHTML = '<b style="color:#b91c1c">\\(a\\) tidak boleh 0</b>';
+              renderMath($('dsOut'));
+              return;
+            }
+            const s = analisisFungsi(a, b, c);
+            
+            const pts = plane.sampleFunc((x) => a * x * x + b * x + c, -20, 20, 300);
+            plane.polyline(pts, { color: '#0ea5e9', width: 2.6 });
+
+            if (s.akar.length >= 1) {
+              s.akar.forEach((r, i) => {
+                if (isFinite(r) && Math.abs(r) < plane.range + 2) {
+                  plane.point({ x: r, y: 0 }, {
+                    color: '#d97706', r: 6.5,
+                    label: 'x' + (i + 1) + '=' + fmtNum(r)
+                  });
+                }
+              });
+            }
+
+            const out = $('dsOut');
+            let color = s.disc > 0 ? '#047857' : (Math.abs(s.disc) < 1e-12 ? '#b45309' : '#b91c1c');
+            let html = 'Fungsi: \\[f(x) = ' + polyTeX(a, b, c, 'x') + '\\]';
+            html += 'Diskriminan: \\[D = b^{2} - 4ac = (' + b + ')^{2} - 4(' + a + ')(' + c + ') = ' + s.disc + '\\]';
+            html += '<b style="color:' + color + '">Kesimpulan: ' + s.jenis + '</b>';
+            out.innerHTML = html;
+            renderMath(out);
+          }
+          ['dsA', 'dsB', 'dsC'].forEach(id => $(id).addEventListener('input', draw));
+          $('dsPlay').onclick = draw;
+          plane.onResize = draw;
+          draw();
+        },
+      });
+
+      /* ---------- SLIDE 4 : MENYUSUN PERSAMAAN ---------- */
+      slides.push({
+        title: 'Menyusun Fungsi',
+        icon: '🏗️',
+        sub: 'Dari grafik yang diketahui',
+        html: `
+        <div class="slide-head">
+          <span class="slide-icon">🏗️</span>
+          <div>
+            <h2>Menyusun Persamaan Parabola</h2>
+            <p class="slide-sub">Menemukan fungsi kuadrat dari informasi grafik</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📌 Tiga Skenario Umum</h3>
+          <div class="contoh" style="margin-top:0">
+            <h4>1. Diketahui titik puncak \((x_p, y_p)\) dan satu titik lain \((x, y)\)</h4>
+            <p>Gunakan rumus:</p>
+            <div class="rumus">
+              \\[ y = a(x - x_p)^{2} + y_p \\]
+            </div>
+            <p>Substitusi titik lain untuk mencari nilai \(a\).</p>
+          </div>
+
+          <div class="contoh">
+            <h4>2. Diketahui memotong sumbu x di \((x_1, 0)\) dan \((x_2, 0)\) serta satu titik lain</h4>
+            <p>Gunakan rumus:</p>
+            <div class="rumus">
+              \\[ y = a(x - x_1)(x - x_2) \\]
+            </div>
+            <p>Substitusi titik lain untuk mencari nilai \(a\).</p>
+          </div>
+
+          <div class="contoh">
+            <h4>3. Diketahui melewati tiga titik sembarang</h4>
+            <p>Gunakan rumus umum \(y = ax^2 + bx + c\). Substitusi ketiga titik ke dalam persamaan, lalu lakukan eliminasi untuk mencari \(a, b, c\).</p>
+          </div>
+        </div>
+      `,
+        init: function () { renderMath($('slideContent')); },
+      });
+
+      /* ---------- SLIDE 5 : RANGKUMAN ---------- */
+      slides.push({
+        title: 'Rangkuman',
+        icon: '📋',
+        sub: 'Kumpulan rumus penting',
+        html: `
+        <div class="slide-head">
+          <span class="slide-icon">📋</span>
+          <div>
+            <h2>Rangkuman Fungsi Kuadrat</h2>
+            <p class="slide-sub">Semua rumus penting dalam satu halaman</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📐 Unsur-unsur Grafik</h3>
+          <table class="tabel">
+            <tr><th>Unsur</th><th>Rumus / Titik</th></tr>
+            <tr><td>Bentuk Umum</td><td>\\(f(x) = ax^{2} + bx + c\\)</td></tr>
+            <tr><td>Titik Potong Sumbu Y</td><td>\\((0, c)\\)</td></tr>
+            <tr><td>Sumbu Simetri</td><td>\\(x_p = -\\dfrac{b}{2a}\\)</td></tr>
+            <tr><td>Titik Puncak</td><td>\\((x_p, y_p)\\) dengan \\(y_p = -\\dfrac{D}{4a}\\)</td></tr>
+            <tr><td>Diskriminan</td><td>\\(D = b^{2} - 4ac\\)</td></tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>🔍 Karakteristik Nilai \(a, b, c\)</h3>
+          <table class="tabel">
+            <tr><th>Nilai</th><th>Pengaruh pada Grafik</th></tr>
+            <tr><td>\\(a > 0\\)</td><td>Terbuka ke atas (punya titik minimum)</td></tr>
+            <tr><td>\\(a < 0\\)</td><td>Terbuka ke bawah (punya titik maksimum)</td></tr>
+            <tr><td>\\(c > 0\\)</td><td>Memotong sumbu Y positif</td></tr>
+            <tr><td>\\(c < 0\\)</td><td>Memotong sumbu Y negatif</td></tr>
+          </table>
+        </div>
+
+        <div class="card" style="text-align:center">
+          <h3 style="justify-content:center">🎯 Siap untuk Latihan?</h3>
+          <p>Uji pemahamanmu dengan 10 soal pilihan ganda tentang Fungsi Kuadrat dalam waktu 20 menit.</p>
+          <button class="btn-primary" id="btnGoQuiz" style="margin-top:8px">📝 Mulai Latihan Soal</button>
+        </div>
+      `,
+        init: function () {
+          renderMath($('slideContent'));
+          const b = $('btnGoQuiz');
+          if (b) b.onclick = () => startQuiz();
+        },
+      });
+
+      /* =====================================================
+         6. SLIDE RENDERING
+      ===================================================== */
+      let currentSlide = 0;
+
+      function buildSidebar() {
+        const sb = $('sidebar');
+        sb.innerHTML = '<div class="sidebar-title">Daftar Materi</div>';
+        slides.forEach((s, i) => {
+          const el = document.createElement('button');
+          el.className = 'nav-item';
+          el.innerHTML = '<span class="num">' + (i + 1) + '</span><span>' + s.title + '</span>';
+          el.onclick = () => renderSlide(i);
+          sb.appendChild(el);
+        });
+      }
+
+      function renderSlide(i) {
+        currentSlide = i;
+        const s = slides[i];
+        activePlanes.length = 0;
+        $('slideContent').innerHTML = s.html;
+        $('slideIndicator').textContent = 'Materi ' + (i + 1) + ' / ' + slides.length;
+        $('btnSlidePrev').disabled = i === 0;
+        const nextBtn = $('btnSlideNext');
+        if (i === slides.length - 1) {
+          nextBtn.classList.remove('nav-btn-primary');
+          nextBtn.classList.add('nav-btn-success');
+          nextBtn.innerHTML = '📝 Ke Latihan Soal';
+        } else {
+          nextBtn.classList.add('nav-btn-primary');
+          nextBtn.classList.remove('nav-btn-success');
+          nextBtn.innerHTML = 'Selanjutnya <span>▶</span>';
+        }
+        document.querySelectorAll('#sidebar .nav-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        renderMath($('slideContent'));
+        requestAnimationFrame(() => { if (s.init) s.init(); });
+      }
+
+      $('btnSlidePrev').onclick = () => { if (currentSlide > 0) renderSlide(currentSlide - 1); };
+      $('btnSlideNext').onclick = () => {
+        if (currentSlide < slides.length - 1) renderSlide(currentSlide + 1);
+        else startQuiz();
+      };
+
+      /* =====================================================
+         7. QUIZ DATA — 10 SOAL (Berdasarkan LKPD)
+      ===================================================== */
+      const GOOGLE_SHEETS_WEBAPP_URL =
+        'https://script.google.com/macros/s/AKfycbxhjUkOKVvgTFXSLdl39ptq2X8ucH80dl_h8C6eE9u9WkzrrEGxDapCjRUbc05WaoOI/exec';
+
+      const soalData = [
+        {
+          q: 'Persamaan sumbu simetri \\(x_p\\) dari parabola \\(y = 8 + 4x - x^{2}\\) adalah …',
+          o: ['\\(-2\\)', '\\(-1\\)', '\\(1\\)', '\\(2\\)', '\\(4\\)'],
+          c: 3, // 2
+        },
+        {
+          q: 'Ordinat titik balik grafik fungsi \\(y = 2x^{2} + 8x + 20\\) adalah …',
+          o: ['\\(11\\)', '\\(12\\)', '\\(13\\)', '\\(14\\)', '\\(15\\)'],
+          c: 1, // 12
+        },
+        {
+          q: 'Koordinat titik balik minimum fungsi \\(y = 2x^{2} - 4x + 2\\) adalah …',
+          o: ['\\((-1, 2)\\)', '\\((-1, -2)\\)', '\\((-1, 7)\\)', '\\((1, -2)\\)', '\\((1, 0)\\)'],
+          c: 4, // (1,0)
+        },
+        {
+          q: 'Perhatikan grafik yang terbuka ke atas dan memotong sumbu Y negatif. Pernyataan yang benar adalah …',
+          o: ['\\(a < 0\\)', '\\(b < 0\\)', '\\(c < 0\\)', '\\(abc > 0\\)', 'Semua benar'],
+          c: 3, // abc > 0 (karena a>0, b<0, c<0 -> hasilnya positif)
+        },
+        {
+          q: 'Grafik fungsi kuadrat \\(y = ax^{2} + bx + c\\) memiliki puncak di sebelah kanan sumbu Y dan memotong sumbu Y di bawah titik asal. Maka …',
+          o: ['\\(a > 0, c > 0\\)', '\\(a > 0, c < 0\\)', '\\(a < 0, c > 0\\)', '\\(a < 0, c < 0\\)', '\\(a > 0, c = 0\\)'],
+          c: 1, // a > 0, c < 0
+        },
+        {
+          q: 'Grafik fungsi \\(y = ax^{2} + bx + c\\) dengan \\(a > 0\\), \\(b < 0\\), dan \\(c < 0\\) ditunjukkan oleh gambar …',
+          o: ['Terbuka ke atas, puncak di kanan, memotong Y positif', 'Terbuka ke atas, puncak di kanan, memotong Y negatif', 'Terbuka ke bawah, puncak di kiri, memotong Y negatif', 'Terbuka ke atas, puncak di kiri, memotong Y negatif', 'Terbuka ke atas, puncak di kanan, melewati titik asal'],
+          c: 1, // Terbuka ke atas, puncak di kanan, memotong Y negatif
+        },
+        {
+          q: 'Titik potong grafik fungsi kuadrat \\(f(x) = x^{2} - 4x + 3\\) dengan sumbu Y adalah …',
+          o: ['\\((0, -3)\\)', '\\((0, 3)\\)', '\\((3, 0)\\)', '\\((1, 0)\\)', '\\((0, 0)\\)'],
+          c: 1, // (0,3)
+        },
+        {
+          q: 'Nilai diskriminan dari fungsi kuadrat \\(f(x) = x^{2} - 2x + 5\\) adalah …',
+          o: ['\\(-16\\)', '\\(-4\\)', '\\(4\\)', '\\(16\\)', '\\(24\\)'],
+          c: 0, // -16
+        },
+        {
+          q: 'Fungsi kuadrat yang memiliki titik puncak \\((2, -1)\\) dan melalui titik \\((0, 3)\\) adalah …',
+          o: ['\\(y = x^{2} - 4x + 3\\)', '\\(y = x^{2} + 4x + 3\\)', '\\(y = x^{2} - 4x - 3\\)', '\\(y = 2x^{2} - 4x + 3\\)', '\\(y = -x^{2} + 4x - 3\\)'],
+          c: 0, // y = x^2 - 4x + 3
+        },
+        {
+          q: 'Titik potong grafik \\(f(x) = x^{2} - 5x + 6\\) dengan sumbu X adalah …',
+          o: ['\\((2,0)\\) dan \\((3,0)\\)', '\\((-2,0)\\) dan \\((-3,0)\\)', '\\((1,0)\\) dan \\((6,0)\\)', '\\((0,2)\\) dan \\((0,3)\\)', 'Tidak memotong sumbu X'],
+          c: 0, // (2,0) dan (3,0)
+        },
+      ];
+
+      /* =====================================================
+         8. STATE
+      ===================================================== */
+      let nama = '', kelas = '';
+      let currentIndex = 0;
+      const totalSoal = soalData.length; // = 10
+      let timerInterval = null;
+      let timeLeft = 1200; // 20 menit
+      let quizFinished = false;
+      let warningInterval = null;
+      let warningActive = false;
+      let jawabanUser = {}; // menyimpan indeks opsi (0-4)
+      let focusLostTime = 0;
+      let focusInterval = null;
+      const FOCUS_GRACE_PERIOD = 3000;
+
+      document.addEventListener('contextmenu', (e) => e.preventDefault());
+      document.addEventListener('copy', (e) => e.preventDefault());
+      document.addEventListener('cut', (e) => e.preventDefault());
+
+      /* =====================================================
+         9. QUIZ LOGIC
+      ===================================================== */
+      function isQuizActive() {
+        return !$('quizPage').classList.contains('hidden') && !quizFinished;
+      }
+      function startFocusMonitoring() {
+        if (focusInterval) clearInterval(focusInterval);
+        focusInterval = setInterval(() => {
+          if (!isQuizActive()) return;
+          if (!document.hasFocus()) {
+            if (focusLostTime === 0) {
+              focusLostTime = Date.now();
+              $('focusLossBadge').classList.add('active');
+            } else if (Date.now() - focusLostTime > FOCUS_GRACE_PERIOD) {
+              clearInterval(focusInterval); focusInterval = null;
+              $('focusLossBadge').classList.remove('active');
+              customAlert('⚠️ Anda kehilangan fokus dari jendela latihan terlalu lama! Latihan dihentikan.', '🚫').then(() => finishQuiz(true));
+            }
+          } else if (focusLostTime !== 0) {
+            focusLostTime = 0;
+            $('focusLossBadge').classList.remove('active');
+          }
+        }, 500);
+      }
+      function stopFocusMonitoring() {
+        if (focusInterval) { clearInterval(focusInterval); focusInterval = null; }
+        focusLostTime = 0;
+        $('focusLossBadge').classList.remove('active');
+      }
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && isQuizActive()) {
+          customAlert('⚠️ Anda terdeteksi berpindah tab! Latihan akan diselesaikan otomatis.', '🚫').then(() => finishQuiz(true));
+        }
+      });
+      document.addEventListener('keydown', function (e) {
+        if (!isQuizActive()) return;
+        if (e.key === 'Escape' || e.key === 'Esc') {
+          e.preventDefault();
+          customAlert('❓ Apakah Anda ingin menghentikan dan keluar dari latihan sekarang?', '🛑', true).then((ok) => { if (ok) finishQuiz(true); });
+        }
+      });
+
+      // ===== RENDER SOAL (pakai indeks opsi) =====
+      function renderSoal(index) {
+        const s = soalData[index];
+        if (!s) return;
+        const labels = ['A', 'B', 'C', 'D', 'E'];
+        let html = '<div class="soal-card">';
+        html += '<div class="nomor-soal">Soal ' + (index + 1) + ' dari ' + totalSoal + '</div>';
+        html += '<div class="pertanyaan">' + s.q + '</div>';
+        html += '<div class="opsi-vertical">';
+        s.o.forEach((opt, i) => {
+          const sel = jawabanUser[index] === i;
+          html += '<label class="' + (sel ? 'selected' : '') + '" onclick="pilihOpsi(' + index + ',' + i + ')">' +
+            '<input type="radio" name="q' + index + '" value="' + i + '"' + (sel ? ' checked' : '') + ' />' +
+            '<span class="option-label">' + labels[i] + '.</span>' +
+            '<span class="option-text">' + opt + '</span></label>';
+        });
+        html += '</div></div>';
+        $('soalContainer').innerHTML = html;
+        $('progressDisplay').textContent = (index + 1) + ' / ' + totalSoal;
+        $('btnPrev').disabled = index === 0;
+        if (index === totalSoal - 1) {
+          $('btnNext').innerHTML = '📨 Kirim Jawaban';
+          $('btnNext').className = 'nav-btn nav-btn-success';
+          $('btnNext').onclick = () => finishQuiz();
+        } else {
+          $('btnNext').innerHTML = 'Selanjutnya <span>▶</span>';
+          $('btnNext').className = 'nav-btn nav-btn-primary';
+          $('btnNext').onclick = () => { currentIndex++; renderSoal(currentIndex); };
+        }
+        renderMath($('soalContainer'));
+      }
+
+      // ===== PILIH OPSI (indeks) =====
+      window.pilihOpsi = function (soalIdx, optIdx) {
+        jawabanUser[soalIdx] = optIdx;
+        renderSoal(soalIdx);
+      };
+      $('btnPrev').onclick = function () {
+        if (currentIndex > 0) { currentIndex--; renderSoal(currentIndex); }
+      };
+
+      // ===== HITUNG SKOR (bandingkan indeks) =====
+      function hitungSkor() {
+        let benar = 0;
+        soalData.forEach((s, i) => {
+          const chosen = jawabanUser[i];
+          if (typeof chosen === 'number' && chosen === s.c) benar++;
+        });
+        return benar;
+      }
+
+      function startTimer() {
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          const m = Math.floor(timeLeft / 60);
+          const s = timeLeft % 60;
+          $('timerDisplay').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+          if (timeLeft <= 30) $('timerDisplay').classList.add('warning');
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval); timerInterval = null;
+            customAlert('⏰ Waktu pengerjaan latihan telah habis!', '⏰').then(() => finishQuiz(true));
+          }
+        }, 1000);
+      }
+
+      function sendToSpreadsheet(nm, kl, nilai, skor) {
+        const data = {
+          nama: nm, kelas: kl, nilai: nilai, skor: skor,
+          materi: 'Fungsi Kuadrat',
+          tanggal: new Date().toLocaleString('id-ID', { hour12: false }),
+        };
+        const st = $('statusSpreadsheet');
+        st.className = 'status-send sending';
+        st.textContent = '⏳ Mengirim nilai...';
+        const body = Object.keys(data).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(data[k])).join('&');
+        fetch(GOOGLE_SHEETS_WEBAPP_URL, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body,
+        }).then(() => {
+          st.className = 'status-send success';
+          st.textContent = '✅ Nilai berhasil dikirim!';
+        }).catch((err) => {
+          st.className = 'status-send error';
+          st.textContent = '❌ Gagal kirim: ' + err.message;
+        });
+      }
+
+      function finishQuiz(force) {
+        if (quizFinished) return;
+        quizFinished = true;
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        stopFocusMonitoring();
+        const skor = hitungSkor();
+        const nilai = Math.round((skor / totalSoal) * 100);
+        $('quizPage').classList.add('hidden');
+        $('resultPage').classList.remove('hidden');
+        $('skorAkhir').textContent = force ? '0' : nilai;
+        $('resultNama').textContent = nama || '-';
+        $('resultKelas').textContent = kelas || '-';
+        $('resultBenar').textContent = force ? '0 dari ' + totalSoal : skor + ' dari ' + totalSoal;
+        sendToSpreadsheet(nama, kelas, force ? 0 : nilai, force ? 0 : skor);
+        sessionStorage.setItem('mpi_selesai', 'true');
+        sessionStorage.setItem('mpi_nama', nama);
+        sessionStorage.setItem('mpi_kelas', kelas);
+        sessionStorage.setItem('mpi_nilai', force ? 0 : nilai);
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        hideFullscreenWarning();
+      }
+
+      function requestFullscreen() {
+        const el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+      }
+      function showFullscreenWarning() {
+        if (warningActive || quizFinished) return;
+        warningActive = true;
+        $('fullscreenWarning').style.display = 'flex';
+        let t = 10;
+        $('timerWarning').textContent = t;
+        $('countdownTimer').textContent = t;
+        if (warningInterval) clearInterval(warningInterval);
+        warningInterval = setInterval(() => {
+          t--;
+          $('timerWarning').textContent = t;
+          $('countdownTimer').textContent = t;
+          if (t <= 0) {
+            clearInterval(warningInterval); warningInterval = null;
+            customAlert('⏰ Terlalu lama keluar dari fullscreen. Latihan dihentikan.', '⏰').then(() => finishQuiz(true));
+          }
+        }, 1000);
+      }
+      function hideFullscreenWarning() {
+        if (warningInterval) { clearInterval(warningInterval); warningInterval = null; }
+        $('fullscreenWarning').style.display = 'none';
+        warningActive = false;
+      }
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && isQuizActive()) showFullscreenWarning();
+        else hideFullscreenWarning();
+      });
+      $('btnBackFullscreen').onclick = requestFullscreen;
+
+      function startQuiz() {
+        $('materiPage').classList.add('hidden');
+        $('berandaPage').classList.add('hidden');
+        $('resultPage').classList.add('hidden');
+        $('quizPage').classList.remove('hidden');
+        currentIndex = 0;
+        jawabanUser = {};
+        quizFinished = false;
+        timeLeft = 1200; // 20 menit
+        $('timerDisplay').textContent = '20:00';
+        $('timerDisplay').classList.remove('warning');
+        renderSoal(0);
+        startTimer();
+        startFocusMonitoring();
+        requestFullscreen();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      $('btnStart').addEventListener('click', function () {
+        nama = $('namaInput').value.trim();
+        kelas = $('kelasSelect').value;
+        if (!nama || !kelas) {
+          customAlert('Silakan lengkapi Nama dan Kelas terlebih dahulu!', '⚠️');
+          return;
+        }
+        $('userPill').textContent = nama + ' • ' + kelas;
+        $('berandaPage').classList.add('hidden');
+        $('materiPage').classList.remove('hidden');
+        buildSidebar();
+        renderSlide(0);
+      });
+
+      $('btnToQuizTop').addEventListener('click', function () {
+        customAlert('Yakin ingin langsung mengerjakan latihan soal? Pastikan kamu sudah membaca materinya.', '❓', true).then((ok) => {
+          if (ok) startQuiz();
+        });
+      });
+
+      $('btnSubmitQuiz').addEventListener('click', function () {
+        if (quizFinished) return;
+        customAlert('Apakah Anda yakin ingin mengirim jawaban sekarang?', '📨', true).then((ok) => {
+          if (ok) finishQuiz();
+        });
+      });
+
+      $('btnClose').addEventListener('click', () => location.reload());
+
+      window.addEventListener('load', function () {
+        if (sessionStorage.getItem('mpi_selesai') === 'true') {
+          $('berandaPage').classList.add('hidden');
+          $('materiPage').classList.add('hidden');
+          $('quizPage').classList.add('hidden');
+          $('resultPage').classList.remove('hidden');
+          $('skorAkhir').textContent = sessionStorage.getItem('mpi_nilai') || 0;
+          $('resultNama').textContent = sessionStorage.getItem('mpi_nama') || '-';
+          $('resultKelas').textContent = sessionStorage.getItem('mpi_kelas') || '-';
+          $('resultBenar').textContent = '-';
+          $('statusSpreadsheet').className = 'status-send success';
+          $('statusSpreadsheet').textContent = '✅ Data nilai Anda telah tersimpan sebelumnya.';
+        }
+      });
+    </script>
+  </body>
+</html>
